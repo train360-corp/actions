@@ -1,0 +1,42 @@
+name: Version
+
+on:
+  workflow_call:
+    inputs:
+      file-name:
+        description: "file to check for version changes (with version as key in top-level json)"
+        required: true
+        type: string
+    secrets:
+      github-token:
+        description: "GitHub token for version check"
+    outputs:
+      version:
+        description: "The detected version from the file"
+        value: ${{ jobs.version-check.outputs.version }}
+      changed:
+        description: "Whether the version has changed"
+        value: ${{ jobs.version-check.outputs.changed }}
+
+jobs:
+  version-check:
+    name: Check
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      changed: ${{ steps.version.outputs.changed }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: version
+        uses: EndBug/version-check@v2
+        with:
+          diff-search: true
+          token: ${{ secrets.github-token }}
+          file-name: ${{ inputs.file-name }}
+
+      - name: Verify version change
+        if: steps.version.outputs.changed == 'false'
+        run: echo "VERSION CHANGE NOT DETECTED" && exit 1
