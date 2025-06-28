@@ -15,8 +15,23 @@ jobs:
           - tests/version-check/top-level.json
           - tests/version-check/second-level.json
 
-    uses: ./.github/workflows/version-check.yml
-    with:
-      file-name: ${{ matrix.files }}
-    secrets:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.run.outputs.version }}
+      previous-version: ${{ steps.run.outputs.previous-version }}
+      changed: ${{ steps.run.outputs.changed }}
+
+    steps:
+      - name: Run reusable workflow
+        id: run
+        uses: ./.github/workflows/version-check.yml
+        with:
+          file-name: ${{ matrix.files }}
+        secrets:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log outputs
+        run: |
+          echo "Version: ${{ steps.run.outputs.version }}"
+          echo "Previous Version: ${{ steps.run.outputs.previous-version }}"
+          echo "Changed: ${{ steps.run.outputs.changed }}"
