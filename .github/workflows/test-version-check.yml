@@ -21,7 +21,7 @@ jobs:
           - file: tests/version-check/second-level.json
             path: .object.version
     with:
-      file-name: ${{ matrix.include.file }}
-      json-version-path: ${{ matrix.include.path }}
+      file-name: ${{ matrix.file }}
+      json-version-path: ${{ matrix.path }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
