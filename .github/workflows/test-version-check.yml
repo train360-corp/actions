@@ -3,9 +3,9 @@ name: Test Version Check
 on:
   push:
     paths:
-      - ./.github/workflows/version-check.yml
-      - ./.github/workflows/test-version-check.yml
-      - ./tests/version-check/**
+      - .github/workflows/version-check.yml
+      - .github/workflows/test-version-check.yml
+      - tests/version-check/**
 
 jobs:
   test:
