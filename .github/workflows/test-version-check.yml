@@ -10,14 +10,24 @@ on:
 jobs:
   run-version-check:
     uses: ./.github/workflows/version-check.yml
+    strategy:
+      matrix:
+        file:
+          - tests/version-check/top-level.json
+          - tests/version-check/second-level.json
     with:
-      file-name: tests/version-check/top-level.json
+      file-name: ${{ matrix.file }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
 
   log-results:
     needs: run-version-check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        file:
+          - tests/version-check/top-level.json
+          - tests/version-check/second-level.json
     steps:
       - name: Log Outputs
         run: |

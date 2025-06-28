@@ -71,3 +71,14 @@ jobs:
           else
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: 📄 Write Summary
+        run: |
+          {
+            echo "### ✅ Version Check Summary"
+            echo ""
+            echo "**File:** \`${{ inputs.file-name }}\`"
+            echo "- Version: \`${{ steps.compare.outputs.version }}\`"
+            echo "- Previous Version: \`${{ steps.compare.outputs.previous_version }}\`"
+            echo "- Changed: \`${{ steps.compare.outputs.changed }}\`"
+          } >> $GITHUB_STEP_SUMMARY
