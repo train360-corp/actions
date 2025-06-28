@@ -3,6 +3,11 @@ name: Version Check
 on:
   workflow_call:
     inputs:
+      fail-on-no-change:
+        description: "If true, the job will fail when the version has not changed"
+        required: false
+        default: true
+        type: boolean
       file-name:
         description: "Path to JSON file to check for version changes"
         required: true
@@ -41,8 +46,7 @@ jobs:
         with:
           fetch-depth: 2  # Ensure HEAD^1 is available
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
+      - run: sudo apt-get install -y jq
 
       - name: Extract current version (HEAD)
         id: current
