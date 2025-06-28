@@ -1,0 +1,24 @@
+name: Test Version Check
+
+on:
+  push:
+    paths:
+      - ./.github/workflows/version-check.yml
+      - ./.github/workflows/test-version-check.yml
+      - ./tests/version-check/**
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    name: tests
+    strategy:
+      matrix:
+        files:
+          - tests/version-check/top-level.json
+          - tests/version-check/second-level.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/workflows/version-check.yml
+        with:
+          file-name: ${{ matrix.files }}
