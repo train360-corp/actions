@@ -9,27 +9,18 @@ on:
 
 jobs:
   run-version-check:
-    strategy:
-      matrix:
-        files:
-          - tests/version-check/top-level.json
-          - tests/version-check/second-level.json
+    uses: ./.github/workflows/version-check.yml
+    with:
+      file-name: tests/version-check/top-level.json
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
 
+  log-results:
+    needs: run-version-check
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.run.outputs.version }}
-      previous-version: ${{ steps.run.outputs.previous-version }}
-      changed: ${{ steps.run.outputs.changed }}
-
     steps:
-      - name: Run reusable workflow
-        id: run
-        uses: ./.github/workflows/version-check.yml
-        with:
-          file-name: ${{ matrix.files }}
-
-      - name: Log outputs
+      - name: Log Outputs
         run: |
-          echo "Version: ${{ steps.run.outputs.version }}"
-          echo "Previous Version: ${{ steps.run.outputs.previous-version }}"
-          echo "Changed: ${{ steps.run.outputs.changed }}"
+          echo "Version: ${{ needs.run-version-check.outputs.version }}"
+          echo "Previous Version: ${{ needs.run-version-check.outputs.previous-version }}"
+          echo "Changed: ${{ needs.run-version-check.outputs.changed }}"
