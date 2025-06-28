@@ -12,9 +12,14 @@ jobs:
     uses: ./.github/workflows/version-check.yml
     strategy:
       matrix:
-        file:
-          - tests/version-check/top-level.json
-          - tests/version-check/second-level.json
+        include:
+          - file: tests/version-check/top-level.json
+
+          - file: tests/version-check/top-level-different-name.json
+            path: .app-version
+
+          - file: tests/version-check/second-level.json
+            path: .object.version
     with:
       file-name: ${{ matrix.file }}
     secrets:
