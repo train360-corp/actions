@@ -72,6 +72,24 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: 🔍 Parse version components
+        id: parse
+        run: |
+          parse_version() {
+            version="$1"
+            if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              echo "major=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+              echo "minor=${BASH_REMATCH[2]}" >> $GITHUB_OUTPUT
+              echo "patch=${BASH_REMATCH[3]}" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Invalid version format: '$version'" >> $GITHUB_STEP_SUMMARY
+              echo "::error title=Version Parse Error::Invalid version string: '$version'. Expected format: MAJOR.MINOR.PATCH"
+              exit 1
+            fi
+          }
+
+          parse_version "${{ steps.compare.outputs.version }}"
+
       - name: 📄 Write Summary
         run: |
           {
@@ -81,4 +99,9 @@ jobs:
             echo "- Version: \`${{ steps.compare.outputs.version }}\`"
             echo "- Previous Version: \`${{ steps.compare.outputs.previous_version }}\`"
             echo "- Changed: \`${{ steps.compare.outputs.changed }}\`"
+            echo ""
+            echo "**Parsed Components:**"
+            echo "- Major: \`${{ steps.parse.outputs.major }}\`"
+            echo "- Minor: \`${{ steps.parse.outputs.minor }}\`"
+            echo "- Patch: \`${{ steps.parse.outputs.patch }}\`"
           } >> $GITHUB_STEP_SUMMARY
