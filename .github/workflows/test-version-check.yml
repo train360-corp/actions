@@ -16,7 +16,7 @@ jobs:
           - file: tests/version-check/top-level.json
 
           - file: tests/version-check/top-level-different-name.json
-            path: .app-version
+            path: .v
 
           - file: tests/version-check/second-level.json
             path: .object.version
