@@ -111,3 +111,9 @@ jobs:
             echo "- Minor: \`${{ steps.parse.outputs.minor }}\`"
             echo "- Patch: \`${{ steps.parse.outputs.patch }}\`"
           } >> $GITHUB_STEP_SUMMARY
+
+      - name: ⛔ Fail if version not changed (optional)
+        if: ${{ inputs.fail-on-no-change == 'true' && steps.compare.outputs.changed == 'false' }}
+        run: |
+          echo "::error title=No Version Change::Version did not change and fail-on-no-change is true."
+          exit 1
