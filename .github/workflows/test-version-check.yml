@@ -27,8 +27,6 @@ jobs:
         uses: ./.github/workflows/version-check.yml
         with:
           file-name: ${{ matrix.files }}
-        secrets:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log outputs
         run: |
