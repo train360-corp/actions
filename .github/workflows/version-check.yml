@@ -47,14 +47,14 @@ jobs:
       - name: Extract current version (HEAD)
         id: current
         run: |
-          version=$(jq -r '${{ inputs.json-version-path }}' "${{ inputs.file-name }}")
+          version=$(jq -r '${{ inputs.json-version-path || ".version" }}' "${{ inputs.file-name }}")
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Extract previous version (HEAD^1)
         id: previous
         run: |
           content=$(git show HEAD^:"${{ inputs.file-name }}")
-          version=$(echo "$content" | jq -r '${{ inputs.json-version-path }}')
+          version=$(echo "$content" | jq -r '${{ inputs.json-version-path || ".version" }}')
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Compare versions
