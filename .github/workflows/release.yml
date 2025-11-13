@@ -1,0 +1,99 @@
+name: "Reusable Release Manager"
+description: "Bump version, create tag, and publish release notes."
+
+inputs:
+  bump-type:
+    description: "Version bump type"
+    required: true
+    default: "PATCH"
+  artifacts:
+    description: "Comma-separated list of artifact file paths to upload"
+    required: false
+    default: ""
+
+outputs:
+  tag:
+    description: "The new release tag"
+  release-url:
+    description: "URL of the created release"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Determine next version and create tag
+      id: bump
+      shell: bash
+      env:
+        BUMP_TYPE: ${{ inputs.bump-type }}
+      run: |
+        set -euo pipefail
+
+        latest=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' | sort -V | tail -n1 || true)
+        [[ -z "$latest" ]] && latest="v0.0.0"
+
+        ver="${latest#v}"
+        IFS='.' read -r major minor patch <<<"$ver"
+
+        case "$BUMP_TYPE" in
+          MAJOR) major=$((major+1)); minor=0; patch=0;;
+          MINOR) minor=$((minor+1)); patch=0;;
+          PATCH) patch=$((patch+1));;
+          *) echo "Unknown bump type"; exit 1;;
+        esac
+
+        new_tag="v${major}.${minor}.${patch}"
+
+        if git rev-parse -q --verify "refs/tags/$new_tag" >/dev/null; then
+          echo "Tag already exists"; exit 1
+        fi
+
+        git tag -a "$new_tag" -m "Release $new_tag"
+        git push origin "$new_tag"
+
+        echo "tag=$new_tag" >> "$GITHUB_OUTPUT"
+
+    - name: Generate changelog from commits
+      id: changelog
+      shell: bash
+      run: |
+        prev=$(git tag --sort=version:refname | tail -n2 | head -n1 || true)
+        new="${{ steps.bump.outputs.tag }}"
+
+        [ -z "$prev" ] && range="" || range="$prev..HEAD"
+
+        notes=$(git log $range --pretty=format:"%s" |
+          grep -E "^(feat|fix|chore|docs|refactor|perf|test|ci):" |
+          sed -E \
+            -e "s/^feat:/### ✨ Features\n-/" \
+            -e "s/^fix:/### 🐛 Fixes\n-/" \
+            -e "s/^chore:/### 🛠 Chores\n-/" \
+            -e "s/^docs:/### 📚 Docs\n-/" \
+            -e "s/^refactor:/### ♻️ Refactor\n-/" \
+            -e "s/^perf:/### ⚡ Performance\n-/" \
+            -e "s/^test:/### ✅ Tests\n-/" \
+            -e "s/^ci:/### 🤖 CI\n-/"
+        )
+
+        release_notes=$(echo "$notes" | awk '!a[$0]++')
+
+        echo "release_notes<<EOF" >> "$GITHUB_OUTPUT"
+        echo "$release_notes" >> "$GITHUB_OUTPUT"
+        echo "EOF" >> "$GITHUB_OUTPUT"
+
+    - name: Create GitHub release
+      id: gh-release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.bump.outputs.tag }}
+        body: ${{ steps.changelog.outputs.release_notes }}
+        make_latest: true
+        files: ${{ inputs.artifacts }}
+
+    - name: Output release URL
+      shell: bash
+      run: echo "release-url=${{ steps.gh-release.outputs.url }}" >> "$GITHUB_OUTPUT"
