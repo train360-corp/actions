@@ -1,3 +1,26 @@
+##Example Usage
+#name: Example Job
+#
+#on:
+#  workflow_dispatch:
+#    inputs:
+#      type:
+#        type: choice
+#        description: "Version bump type"
+#        options: [PATCH, MINOR, MAJOR]
+#        default: PATCH
+#        required: true
+#
+#permissions:
+#  contents: write  # needed to push tags & create releases
+#
+#jobs:
+#
+#  version:
+#    uses: train360-corp/actions/.github/workflows/get-release-version.yml@main
+#    with:
+#      bump-type: ${{ github.event.inputs.type }}
+
 name: "Get Version From Tags"
 
 on:
