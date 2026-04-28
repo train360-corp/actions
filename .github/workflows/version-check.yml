@@ -42,7 +42,7 @@ jobs:
       changed: ${{ steps.compare.outputs.changed }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 2  # Ensure HEAD^1 is available
 
